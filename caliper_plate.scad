@@ -3,13 +3,16 @@
  */ 
 plateHeight = 12.7; // half an inch in mm
 plateLength = 175; // mm
-plateWidth = 35; //mm
-plateWingLength = 60; //mm
+plateWidth = 102; //mm
+cutOutCircleDiameter = 95; //mm
+cutOutCircleYPos = (cutOutCircleDiameter / 2) + 35; //mm
+yPos = -7; //mm (Y Pod of the entire plate)
 plateWingWidth = 40; //mm
 cutOutHeight = 30; //mm
 boltSize = 15.5; //mm (hole to fit M14 bolt)
 boltXOffset = 50; //m
 boltYOffset = 20; //m
+hubBoltCutOutDiam = 20; //mm
 
 mainColor = [0.8, 0.8, 0.8]; // color to use
 
@@ -21,29 +24,35 @@ module highResCylinder(height, radius) {
   cylinder(height, radius, radius, $fn = numberOfCircleSegements);
 }
 
+// Caliper bolt shape
 module boltShape() {  
-  highResCylinder(cutOutHeight, boltSize / 2);
-    
+  highResCylinder(cutOutHeight, boltSize / 2);    
 }
+
+
+// Cutout shape to fit a wrench on the hub bolts
+module hubBoltCutOut() {  
+  highResCylinder(cutOutHeight, hubBoltCutOutDiam / 2);
+}
+
 
 /**
  * Single components
  */
-// The sections 
-module wingPlate() {
-  cube([plateWingWidth, plateWingLength, plateHeight]);
-}
-
-module plate() {  
-  union() {
-    cube([plateLength, plateWidth, plateHeight]);    
-    translate([0, plateWidth, 0]) {
-      wingPlate();
+module plate() { 
+  difference() {    
+    translate([0, -7, 0]) {      
+      cube([plateLength, plateWidth, plateHeight]);      
     }
-    translate([plateLength - plateWingWidth, plateWidth, 0]) {
-      wingPlate();
-    }    
-  }
+    union() {
+      translate([plateLength / 2, cutOutCircleYPos, 0]) {
+        highResCylinder(cutOutHeight, cutOutCircleDiameter / 2);
+      }
+      translate([ -(cutOutCircleDiameter / 2) + (plateLength / 2), cutOutCircleYPos, 0]) {
+        cube([cutOutCircleDiameter, cutOutCircleDiameter, cutOutHeight]);
+      }
+    }   
+  }  
 }
 
 module circularCutOutShape() {   
@@ -64,6 +73,18 @@ module boltShape2() {
   }
 }
 
+module hubBoltCutOutLeft() {
+  translate([(plateLength / 2) - 54.5, cutOutCircleYPos - 25, 0]) {  
+    hubBoltCutOut();
+  }
+}
+
+module hubBoltCutOutRight() {
+  translate([(plateLength / 2) + 54.5, cutOutCircleYPos - 25, 0]) {  
+    hubBoltCutOut();
+  }
+}
+
 // Circular corner for 270 degree angles
 module circularCornerShape270() {
   intersection() {
@@ -77,30 +98,14 @@ module circularCornerShape270() {
   }
 }
 
-// Circular corner for 90 degree angles
-// Note that this circular corner is bigger than the 270 one
-module circularCornerShape90() {  
-  intersection() {
-    difference() {
-      translate([-30, -30, 0]) {  
-        cube([60, 60, plateHeight]);
-      }
-      highResCylinder(cutOutHeight, 30);
-    }
-    translate([-30, -30, 0]) {
-      cube([30, 30, cutOutHeight]);
-    }
-  }
-}
-
 module circularCornerShape1() {
-  translate([10, 10, 0]) {    
+  translate([10, 10 + yPos, 0]) {    
     circularCornerShape270();
   };
 }
 
 module circularCornerShape2() {
-  translate([plateLength - 10, 10, 0]) {
+  translate([plateLength - 10, 10 + yPos, 0]) {
     rotate([0, 0, 90]) {
       circularCornerShape270();
     }
@@ -108,7 +113,7 @@ module circularCornerShape2() {
 }
 
 module circularCornerShape3() {
-  translate([plateLength - 10, plateWidth + plateWingLength - 10, 0]) {
+  translate([plateLength - 10, plateWidth - 10 + yPos, 0]) {
     rotate([0, 0, 180]) {
       circularCornerShape270();
     }
@@ -116,62 +121,46 @@ module circularCornerShape3() {
 }
 
 module circularCornerShape4() {
-  translate([plateLength - plateWingWidth + 10, plateWidth + plateWingLength - 10, 0]) {
+  translate([plateLength - plateWingWidth + 10, plateWidth - 10 + yPos, 0]) {
     rotate([0, 0, 270]) {
       circularCornerShape270();
     }
   };
 }
 
-module circularCornerShape5() {  
-  translate([plateLength - plateWingWidth - 30, plateWidth + 30, 0]) {
-    rotate([0, 0, 90]) {
-      circularCornerShape90();
-    }
-  }  
-}
-
-module circularCornerShape6() {
-  translate([plateWingWidth + 30, plateWidth + 30, 0]) {
-    circularCornerShape90();
-  }  
-}
-
-module circularCornerShape7() {
-  translate([plateWingWidth - 10, plateWidth + plateWingLength -10, 0]) {
+module circularCornerShape5() {
+  translate([plateWingWidth - 10, plateWidth - 10 + yPos, 0]) {
     rotate([0, 0, 180]) {
       circularCornerShape270();
     }
   };
 }
 
-module circularCornerShape8() {
-  translate([10, plateWidth + plateWingLength -10, 0]) {
+module circularCornerShape6() {
+  translate([10, plateWidth - 10 + yPos, 0]) {
     rotate([0, 0, 270]) {
       circularCornerShape270();
     }
   };
 }
 
-module completeShape() {
-  color(mainColor) {     
-    union() {
-      difference() {
-        plate();      
-        boltShape1();
-        boltShape2();
-        circularCutOutShape();      
-        circularCornerShape1();
-        circularCornerShape2();        
-        circularCornerShape3();
-        circularCornerShape4();
-        circularCornerShape7();
-        circularCornerShape8();
-      }    
+module completeShape() {  
+  union() {
+    difference() {
+      plate();      
+      boltShape1();
+      boltShape2();
+      hubBoltCutOutLeft();
+      hubBoltCutOutRight();
+      circularCutOutShape();      
+      circularCornerShape1();
+      circularCornerShape2();        
+      circularCornerShape3();
+      circularCornerShape4();
       circularCornerShape5();
       circularCornerShape6();
-    }
-  }
+    }          
+  }  
 }
 
 /**
