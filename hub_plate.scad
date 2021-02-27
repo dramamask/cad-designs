@@ -8,8 +8,8 @@ cutOutHeight = 30; //mm
 hubBoltSize = 13.5; //mm (hole to fit M12 bolt)
 hubBoltXOffset = 54.5; //mm
 hubBoltYOffset = 25; //mm
-pieSliceAngle = 110; //degrees
-pieSliceS = 120; //mm (schuine zijde)
+pieSliceAngle = 108; //degrees
+pieSliceS = 160; //mm (schuine zijde)
 lowerRimThickness = 15; //mm
 
 mainColor = [0.8, 0.8, 0.8]; // color to use
@@ -54,18 +54,19 @@ module hubCutOutShape() {
 // The pie slice
 module pieSliceShape() {
   pieSliceO = sin(pieSliceAngle / 2) * pieSliceS; // Overstaande zijde
+  pieSliceA = cos(pieSliceAngle / 2) * pieSliceS; // Aanliggende zijde
         
-  translate([0, -pieSliceO, cutOutHeight - 10]) {
+  translate([0, -pieSliceA, cutOutHeight - 10]) {
     rotate(a=[0, 90, 90]) {
       union() {
         // Triangle 1
-        translate([0, -pieSliceS, 0]) {
-          prism(cutOutHeight, pieSliceS, pieSliceO);
+        translate([0, -pieSliceO, 0]) {
+          prism(cutOutHeight, pieSliceO, pieSliceA);
         }
         // Triangle 2
-        translate([cutOutHeight, pieSliceS, 0]) {
+        translate([cutOutHeight, pieSliceO, 0]) {
           rotate(a=[0, 0, 180]) {
-            prism(cutOutHeight, pieSliceS, pieSliceO);
+            prism(cutOutHeight, pieSliceO, pieSliceA);
           }
         }
       }
@@ -85,6 +86,27 @@ module bittenPieSliceShape() {
   difference() {
     pieSliceShape();
     pieSliceBite();
+  }
+}
+
+// Little cube that fills a gap in the "bitten pie slice"
+module gapFiller() {
+  color([1,0,0]) {
+    cube([15, 6, mainPlateHeight]);
+  }
+}
+
+// Left gap filler
+module gapFiller1() {  
+  translate([-59, -41, 0]) {
+    gapFiller();
+  }
+}
+
+// Right gap filler
+module gapFiller2() {  
+  translate([44, -41, 0]) {
+    gapFiller();
   }
 }
 
@@ -117,24 +139,29 @@ module hubBoltShape4() {
 }
 
 // The complete shape
-module completeShape() {
-  color(mainColor) {    
-    difference() {
-      mainPlate();
-      hubCutOutShape();
-      bittenPieSliceShape();
-      hubBoltShape1();                              
-      hubBoltShape2();      
-      hubBoltShape3();                              
-      hubBoltShape4();      
-    }         
+module completeShape() {  
+  union() {
+    color(mainColor) {    
+      difference() {
+        mainPlate();
+        hubCutOutShape();
+        bittenPieSliceShape();
+        hubBoltShape1();                              
+        hubBoltShape2();      
+        hubBoltShape3();                              
+        hubBoltShape4();      
+      }
+    }
+    gapFiller1();
+    gapFiller2();
   }
 }
+
 
 /**
  * Main
  */
 projection() {
-  completeShape();
+  completeShape();  
 }
 
