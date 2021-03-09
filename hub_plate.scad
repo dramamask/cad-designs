@@ -10,7 +10,7 @@ hubBoltXOffset = 54.5; //mm
 hubBoltYOffset = 25; //mm
 pieSliceAngle = 108; //degrees
 pieSliceS = 160; //mm (schuine zijde)
-lowerRimThickness = 15; //mm
+lowerRimThickness = 13; //mm
 
 mainColor = [0.8, 0.8, 0.8]; // color to use
 
