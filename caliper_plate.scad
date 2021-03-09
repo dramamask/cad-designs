@@ -1,9 +1,9 @@
 /**
  * Variables
  */ 
-plateHeight = 12.7; // half an inch in mm
+plateHeight = 6.35; // half an inch in mm
 plateLength = 175; // mm
-plateWidth = 102; //mm
+plateWidth = 90; //mm
 cutOutCircleDiameter = 95; //mm
 cutOutCircleYPos = (cutOutCircleDiameter / 2) + 35; //mm
 yPos = -7; //mm (Y Pod of the entire plate)
@@ -12,7 +12,7 @@ cutOutHeight = 30; //mm
 boltSize = 15.5; //mm (hole to fit M14 bolt)
 boltXOffset = 50; //m
 boltYOffset = 20; //m
-hubBoltCutOutDiam = 20; //mm
+hubBoltCutOutDiam = 30; //mm
 
 mainColor = [0.8, 0.8, 0.8]; // color to use
 
@@ -39,19 +39,19 @@ module hubBoltCutOut() {
 /**
  * Single components
  */
-module plate() { 
+module plate() {   
   difference() {    
-    translate([0, -7, 0]) {      
-      cube([plateLength, plateWidth, plateHeight]);      
-    }
     union() {
+      translate([0, -7, 0]) {      
+        cube([plateLength, plateWidth, plateHeight]);      
+      }
       translate([plateLength / 2, cutOutCircleYPos, 0]) {
-        highResCylinder(cutOutHeight, cutOutCircleDiameter / 2);
+        highResCylinder(plateHeight, plateLength / 2);
       }
-      translate([ -(cutOutCircleDiameter / 2) + (plateLength / 2), cutOutCircleYPos, 0]) {
-        cube([cutOutCircleDiameter, cutOutCircleDiameter, cutOutHeight]);
-      }
-    }   
+    }    
+    translate([plateLength / 2, cutOutCircleYPos, 0]) {
+      highResCylinder(cutOutHeight, cutOutCircleDiameter / 2);
+    }          
   }  
 }
 
@@ -73,14 +73,26 @@ module boltShape2() {
   }
 }
 
-module hubBoltCutOutLeft() {
+module hubBoltCutOutLowerLeft() {
   translate([(plateLength / 2) - 54.5, cutOutCircleYPos - 25, 0]) {  
     hubBoltCutOut();
   }
 }
 
-module hubBoltCutOutRight() {
+module hubBoltCutOutLowerRight() {
   translate([(plateLength / 2) + 54.5, cutOutCircleYPos - 25, 0]) {  
+    hubBoltCutOut();
+  }
+}
+
+module hubBoltCutOutUpperLeft() {
+  translate([(plateLength / 2) - 54.5, cutOutCircleYPos + 25, 0]) {  
+    hubBoltCutOut();
+  }
+}
+
+module hubBoltCutOutUpperRight() {
+  translate([(plateLength / 2) + 54.5, cutOutCircleYPos + 25, 0]) {  
     hubBoltCutOut();
   }
 }
@@ -112,55 +124,21 @@ module circularCornerShape2() {
   };
 }
 
-module circularCornerShape3() {
-  translate([plateLength - 10, plateWidth - 10 + yPos, 0]) {
-    rotate([0, 0, 180]) {
-      circularCornerShape270();
-    }
-  };
-}
-
-module circularCornerShape4() {
-  translate([plateLength - plateWingWidth + 10, plateWidth - 10 + yPos, 0]) {
-    rotate([0, 0, 270]) {
-      circularCornerShape270();
-    }
-  };
-}
-
-module circularCornerShape5() {
-  translate([plateWingWidth - 10, plateWidth - 10 + yPos, 0]) {
-    rotate([0, 0, 180]) {
-      circularCornerShape270();
-    }
-  };
-}
-
-module circularCornerShape6() {
-  translate([10, plateWidth - 10 + yPos, 0]) {
-    rotate([0, 0, 270]) {
-      circularCornerShape270();
-    }
-  };
-}
-
 module completeShape() {  
   union() {
     difference() {
       plate();      
       boltShape1();
       boltShape2();
-      hubBoltCutOutLeft();
-      hubBoltCutOutRight();
+      hubBoltCutOutLowerLeft();
+      hubBoltCutOutLowerRight();
+      hubBoltCutOutUpperLeft();
+      hubBoltCutOutUpperRight();
       circularCutOutShape();      
       circularCornerShape1();
-      circularCornerShape2();        
-      circularCornerShape3();
-      circularCornerShape4();
-      circularCornerShape5();
-      circularCornerShape6();
+      circularCornerShape2();
     }          
-  }  
+  }    
 }
 
 /**
